@@ -21,9 +21,9 @@ static std::map<const std::string,TH2D> SFmap_;
 
 class flipper : public multidraw::TTreeFunction {
 public:
-  flipper( const char* year , const unsigned int nLep , std::string SF_type );
+  flipper( const char* year , const unsigned int nLep , std::string SF_type, std::string isTightCharge );
   char const* getName() const override { return "flipper"; }
-  TTreeFunction* clone() const override { return new flipper( year_ , nLeptons_ , SF_type_ ); }
+  TTreeFunction* clone() const override { return new flipper( year_ , nLeptons_ , SF_type_, isTightCharge_ ); }
   unsigned getNdata() override { return 1; }
   double evaluate(unsigned) override;
 
@@ -31,6 +31,7 @@ protected:
   const char* year_;
   unsigned int nLeptons_;
   std::string SF_type_;
+  std::string isTightCharge_;
   void bindTree_(multidraw::FunctionLibrary&) override;
   IntArrayReader* Lepton_pdgId;
   FloatArrayReader* Lepton_pt;
@@ -43,17 +44,25 @@ private:
   
 };
 
-flipper::flipper( const char* year , const unsigned int nLep, std::string SF_type ) : TTreeFunction()
+flipper::flipper( const char* year , const unsigned int nLep, std::string SF_type, std::string isTightCharge = "false" ) : TTreeFunction()
 {
   year_ = year;
   nLeptons_ = nLep;
   SF_type_ = SF_type;
+  isTightCharge_ = isTightCharge;
   std::string cmssw_base = std::getenv("CMSSW_BASE");
 
   // map
-  flipper_map_["2016"]["HWW_ttHMVA"] = cmssw_base + "/src/LatinoAnalysis/NanoGardener/python/data/scale_factor/Full2016v6/chargeFlip_WHSS_nanov5_2016_SF.root";
-  flipper_map_["2017"]["HWW_ttHMVA"] = cmssw_base + "/src/LatinoAnalysis/NanoGardener/python/data/scale_factor/Full2017v6/chargeFlip_WHSS_nanov5_2017_SF.root";
-  flipper_map_["2018"]["HWW_ttHMVA"] = cmssw_base + "/src/LatinoAnalysis/NanoGardener/python/data/scale_factor/Full2018v6/chargeFlip_WHSS_nanov5_2018_SF.root";
+  if (isTightCharge == "false"){
+    flipper_map_["2016"]["HWW_ttHMVA"] = cmssw_base + "/src/LatinoAnalysis/NanoGardener/python/data/scale_factor/Full2016v6/chargeFlip_WHSS_nanov5_2016_SF.root";
+    flipper_map_["2017"]["HWW_ttHMVA"] = cmssw_base + "/src/LatinoAnalysis/NanoGardener/python/data/scale_factor/Full2017v6/chargeFlip_WHSS_nanov5_2017_SF.root";
+    flipper_map_["2018"]["HWW_ttHMVA"] = cmssw_base + "/src/LatinoAnalysis/NanoGardener/python/data/scale_factor/Full2018v6/chargeFlip_WHSS_nanov5_2018_SF.root";
+  }
+  else{
+    flipper_map_["2016"]["HWW_ttHMVA"] = cmssw_base + "/src/LatinoAnalysis/NanoGardener/python/data/scale_factor/Full2016v7/chargeFlip_2016_v7_SF_tightCharge.root"; // file doesn't exist!
+    flipper_map_["2017"]["HWW_ttHMVA"] = cmssw_base + "/src/LatinoAnalysis/NanoGardener/python/data/scale_factor/Full2017v7/chargeFlip_2017_v7_SF_tightCharge.root"; // file doesn't exist!
+    flipper_map_["2018"]["HWW_ttHMVA"] = cmssw_base + "/src/LatinoAnalysis/NanoGardener/python/data/scale_factor/Full2018v7/chargeFlip_2018_v7_SF_tightCharge.root";
+  }
 
   // load histogram
   loadSF2D( flipper_map_[year_]["HWW_ttHMVA"] );

@@ -1,7 +1,4 @@
 # nuisances
-
-#nuisances = {}
-
 # name of samples here must match keys in samples.py 
 
 # imported from samples.py:
@@ -38,7 +35,9 @@ configurations = os.path.dirname(configurations) # WW
 configurations = os.path.dirname(configurations) # Configurations
 
 diffcuts = samples['WW']['subsamples'] if 'WW' in samples else {}
+allcuts = [cut+'_'+cat for cut in cuts for cat in cuts[cut]['categories']]
 nfdict = json.load(open("%s/WW/FullRunII/Full2018_v7/njets/WWnorm.json"%configurations))
+sfdict = json.load(open("%s/WW/FullRunII/Full2018_v7/njets/sampleFrac.json"%configurations))
 
 ################################ EXPERIMENTAL UNCERTAINTIES  #################################
 
@@ -296,28 +295,16 @@ nuisances['PU'] = {
     'kind': 'weight',
     'type': 'shape',
     'samples': {
-        'DY'      : ['1.005805*(puWeightUp/puWeight)', '0.995182*(puWeightDown/puWeight)'],
-        'WW'      : ['1.007590*(puWeightUp/puWeight)', '0.992894*(puWeightDown/puWeight)'],
-        'ggWW'    : ['1.008988*(puWeightUp/puWeight)', '0.991468*(puWeightDown/puWeight)'],
-        'WWewk'   : ['1.005414*(puWeightUp/puWeight)', '0.995500*(puWeightDown/puWeight)'],
-        'Wg'      : ['0.999840*(puWeightUp/puWeight)', '0.998649*(puWeightDown/puWeight)'],
-        'WgS'     : ['0.997904*(puWeightUp/puWeight)', '1.002574*(puWeightDown/puWeight)'],
-        'Zg'      : ['1.009464*(puWeightUp/puWeight)', '0.986684*(puWeightDown/puWeight)'],
-        'ZgS'     : ['0.976877*(puWeightUp/puWeight)', '1.015519*(puWeightDown/puWeight)'],
-        'WZ'      : ['1.000732*(puWeightUp/puWeight)', '0.999451*(puWeightDown/puWeight)'],
-        'ZZ'      : ['1.002019*(puWeightUp/puWeight)', '0.998670*(puWeightDown/puWeight)'],
-        'VVV'     : ['1.003616*(puWeightUp/puWeight)', '0.996437*(puWeightDown/puWeight)'],
-        'top'     : ['1.004509*(puWeightUp/puWeight)', '0.995798*(puWeightDown/puWeight)'],
-        'ggH_htt' : ['1.007459*(puWeightUp/puWeight)', '0.993088*(puWeightDown/puWeight)'],
-        'qqH_htt' : ['1.007518*(puWeightUp/puWeight)', '0.993275*(puWeightDown/puWeight)'],
-        'WH_htt'  : ['1.006780*(puWeightUp/puWeight)', '0.993761*(puWeightDown/puWeight)'],
-        'ZH_htt'  : ['1.006238*(puWeightUp/puWeight)', '0.994059*(puWeightDown/puWeight)'],
-        'ggH_hww' : ['1.009547*(puWeightUp/puWeight)', '0.991180*(puWeightDown/puWeight)'],
-        'qqH_hww' : ['1.010037*(puWeightUp/puWeight)', '0.990520*(puWeightDown/puWeight)'],
-        'WH_hww'  : ['1.007771*(puWeightUp/puWeight)', '0.992116*(puWeightDown/puWeight)'],
-        'ZH_hww'  : ['1.005918*(puWeightUp/puWeight)', '0.993548*(puWeightDown/puWeight)'],
-        'ggZH_hww': ['1.009085*(puWeightUp/puWeight)', '0.990974*(puWeightDown/puWeight)'],
-        'ttH_hww' : ['1.000352*(puWeightUp/puWeight)', '0.999734*(puWeightDown/puWeight)'],
+        'DY'      : ['0.996330*(puWeightUp/puWeight)', '1.004361*(puWeightDown/puWeight)'],
+        'WW'      : ['1.002285*(puWeightUp/puWeight)', '0.997916*(puWeightDown/puWeight)'],
+        'ggWW'    : ['1.003398*(puWeightUp/puWeight)', '0.996771*(puWeightDown/puWeight)'],
+        'WWewk'   : ['0.999699*(puWeightUp/puWeight)', '1.000878*(puWeightDown/puWeight)'],
+        'Vg'      : ['1.008219*(puWeightUp/puWeight)', '0.989461*(puWeightDown/puWeight)'],
+        'WZ'      : ['0.994550*(puWeightUp/puWeight)', '1.005367*(puWeightDown/puWeight)'],
+        'ZZ'      : ['0.993192*(puWeightUp/puWeight)', '1.007404*(puWeightDown/puWeight)'],
+        'VVV'     : ['0.998195*(puWeightUp/puWeight)', '1.001628*(puWeightDown/puWeight)'],
+        'top'     : ['1.000612*(puWeightUp/puWeight)', '0.999489*(puWeightDown/puWeight)'],
+        'Higgs'   : ['1.000709*(puWeightUp/puWeight)', '0.999474*(puWeightDown/puWeight)'],
     },
     'AsLnN': '1',
 }
@@ -399,14 +386,16 @@ nuisances['singleTopToTTbar'] = {
     'samples': apply_on
 }
 
-
-nuisances['WgStar'] = {
-    'name': 'CMS_hww_WgStarScale',
-    'type': 'lnN',
-    'samples': {
-        'WgS': '1.25'
+for cut in allcuts:
+    nuisances['WgStar_'+cut] = {
+        'name': 'CMS_hww_WgStarScale',
+        'type': 'lnN',
+        'samples': {
+            'Vg': '{:.3f}'.format(1.25*sfdict[cut]['Vg']['WgS']+1.0*(1.0-sfdict[cut]['Vg']['WgS']))
+        },
+        'cuts' : [cut]
     }
-}
+
 '''
 nuisances['VZ'] = {
     'name': 'CMS_hww_VZScale',
@@ -418,71 +407,59 @@ nuisances['VZ'] = {
 '''
 ###### pdf uncertainties
 
-valuesggh = HiggsXS.GetHiggsProdXSNP('YR4','13TeV','ggH','125.09','pdf','sm')
-valuesggzh = HiggsXS.GetHiggsProdXSNP('YR4','13TeV','ggZH','125.09','pdf','sm')
-valuesbbh = HiggsXS.GetHiggsProdXSNP('YR4','13TeV','bbH','125.09','pdf','sm')
-
-nuisances['pdf_Higgs_gg'] = {
-    'name': 'pdf_Higgs_gg',
-    'samples': {
-        'ggH_hww': valuesggh,
-        'ggH_htt': valuesggh,
-        'ggZH_hww': valuesggzh,
-        'bbH_hww': valuesbbh
-    },
-    'type': 'lnN',
+values = {
+    'ggH_hww'  : HiggsXS.GetHiggsProdXSNP('YR4','13TeV','ggH', '125.09','pdf','sm'),
+    'qqH_hww'  : HiggsXS.GetHiggsProdXSNP('YR4','13TeV','vbfH','125.09','pdf','sm'),
+    'WH_hww'   : HiggsXS.GetHiggsProdXSNP('YR4','13TeV','WH',  '125.09','pdf','sm'),
+    'ZH_hww'   : HiggsXS.GetHiggsProdXSNP('YR4','13TeV','ZH',  '125.09','pdf','sm'),
+    'ggZH_hww' : HiggsXS.GetHiggsProdXSNP('YR4','13TeV','ggZH','125.09','pdf','sm'),
+    'ttH_hww'  : HiggsXS.GetHiggsProdXSNP('YR4','13TeV','ttH', '125.09','pdf','sm'),
+    'ggH_htt'  : HiggsXS.GetHiggsProdXSNP('YR4','13TeV','ggH', '125.09','pdf','sm'),
+    'qqH_htt'  : HiggsXS.GetHiggsProdXSNP('YR4','13TeV','vbfH','125.09','pdf','sm'),
+    'WH_htt'   : HiggsXS.GetHiggsProdXSNP('YR4','13TeV','WH',  '125.09','pdf','sm'),
+    'ZH_htt'   : HiggsXS.GetHiggsProdXSNP('YR4','13TeV','ZH',  '125.09','pdf','sm')
 }
 
-values = HiggsXS.GetHiggsProdXSNP('YR4','13TeV','ttH','125.09','pdf','sm')
-
-nuisances['pdf_Higgs_ttH'] = {
-    'name': 'pdf_Higgs_ttH',
-    'samples': {
-        'ttH_hww': values
-    },
-    'type': 'lnN',
-}
-
-valuesqqh = HiggsXS.GetHiggsProdXSNP('YR4','13TeV','vbfH','125.09','pdf','sm')
-valueswh = HiggsXS.GetHiggsProdXSNP('YR4','13TeV','WH','125.09','pdf','sm')
-valueszh = HiggsXS.GetHiggsProdXSNP('YR4','13TeV','ZH','125.09','pdf','sm')
-
-nuisances['pdf_Higgs_qqbar'] = {
-    'name': 'pdf_Higgs_qqbar',
-    'type': 'lnN',
-    'samples': {
-        'qqH_hww': valuesqqh,
-        'qqH_htt': valuesqqh,
-        'WH_hww': valueswh,
-        'WH_htt': valueswh,
-        'ZH_hww': valueszh,
-        'ZH_htt': valueszh
-    },
-}
+for cut in allcuts:
+    nuisances['pdf_Higgs_'+cut] = {
+        'name': 'pdf_Higgs',
+        'samples': {
+            'Higgs' : '{:.3f}'.format(sum([float(values[subsample])*sfdict[cut]['Higgs'][subsample] for subsample in values]))
+        },
+        'type': 'lnN',
+        'cuts' : [cut]
+    }
 
 nuisances['pdf_qqbar'] = {
     'name': 'pdf_qqbar',
     'type': 'lnN',
     'samples': {
-        'Wg': '1.04',
-        'Zg': '1.04',
+        'Vg': '1.04',
         'ZZ': '1.04',  # PDF: 0.0064 / 0.1427 = 0.0448493
         'WZ': '1.04',  # PDF: 0.0064 / 0.1427 = 0.0448493
-        'WgS': '1.04', # PDF: 0.0064 / 0.1427 = 0.0448493
-        'ZgS': '1.04', # PDF: 0.0064 / 0.1427 = 0.0448493
     },
 }
 
-nuisances['pdf_Higgs_gg_ACCEPT'] = {
-    'name': 'pdf_Higgs_gg_ACCEPT',
-    'samples': {
-        'ggH_hww': '1.006',
-        'ggH_htt': '1.006',
-        'ggZH_hww': '1.006',
-        'bbH_hww': '1.006'
-    },
-    'type': 'lnN',
-}
+values = {'ggH_hww' : '1.006',
+          'qqH_hww' : '1.002',
+          'WH_hww'  : '1.003',
+          'ZH_hww'  : '1.002',
+          'ggZH_hww': '1.006',
+          'ttH_hww' : '1.000', #No value for ttH_hww?
+          'ggH_htt' : '1.006',
+          'qqH_htt' : '1.002',
+          'WH_htt'  : '1.003',
+          'ZH_htt'  : '1.002'}
+
+for cut in allcuts:
+    nuisances['pdf_Higgs_ACCEPT_'+cut] = {
+        'name': 'pdf_Higgs_ACCEPT',
+        'samples': {
+            'Higgs' : '{:.3f}'.format(sum([float(values[subsample])*sfdict[cut]['Higgs'][subsample] for subsample in values]))
+        },
+        'type': 'lnN',
+        'cuts' : [cut]
+    }
 
 #nuisances['pdf_gg_ACCEPT'] = {
 #    'name': 'pdf_gg_ACCEPT',
@@ -491,19 +468,6 @@ nuisances['pdf_Higgs_gg_ACCEPT'] = {
 #    },
 #    'type': 'lnN',
 #}
-
-nuisances['pdf_Higgs_qqbar_ACCEPT'] = {
-    'name': 'pdf_Higgs_qqbar_ACCEPT',
-    'type': 'lnN',
-    'samples': {
-        'qqH_hww': '1.002',
-        'qqH_htt': '1.002',
-        'WH_hww': '1.003',
-        'WH_htt': '1.003',
-        'ZH_hww': '1.002',
-        'ZH_htt': '1.002',
-    },
-}
 
 nuisances['pdf_qqbar_ACCEPT'] = {
     'name': 'pdf_qqbar_ACCEPT',
@@ -555,12 +519,9 @@ nuisances['QCDscale_VV'] = {
     'kind': 'weight_envelope',
     'type': 'shape',
     'samples': {
-        'Wg': variations,
-        'Zg': variations,
+        'Vg': variations,
         'WZ': variations,
         'ZZ': variations,
-        'WgS': variations,
-        'ZgS': variations
     }
 }
 
@@ -577,10 +538,10 @@ nuisances['QCDscale_WW']  = {
 }
 
 topScaleNormFactors = {
-    '0j' : {'Alt$(LHEScaleWeight[0],1)' : 1.080111, 'Alt$(LHEScaleWeight[1],1)' : 1.078248, 'Alt$(LHEScaleWeight[3],1)' : 1.004575, 'Alt$(LHEScaleWeight[5],1)' : 0.998903, 'Alt$(LHEScaleWeight[7],1)' : 0.922504, 'Alt$(LHEScaleWeight[8],1)' : 0.918951},
-    '1j' : {'Alt$(LHEScaleWeight[0],1)' : 1.091556, 'Alt$(LHEScaleWeight[1],1)' : 1.084440, 'Alt$(LHEScaleWeight[3],1)' : 1.011436, 'Alt$(LHEScaleWeight[5],1)' : 0.992847, 'Alt$(LHEScaleWeight[7],1)' : 0.916969, 'Alt$(LHEScaleWeight[8],1)' : 0.906770},
-    '2j' : {'Alt$(LHEScaleWeight[0],1)' : 1.106451, 'Alt$(LHEScaleWeight[1],1)' : 1.093773, 'Alt$(LHEScaleWeight[3],1)' : 1.018502, 'Alt$(LHEScaleWeight[5],1)' : 0.986458, 'Alt$(LHEScaleWeight[7],1)' : 0.909438, 'Alt$(LHEScaleWeight[8],1)' : 0.892341},
-    '3j' : {'Alt$(LHEScaleWeight[0],1)' : 1.147189, 'Alt$(LHEScaleWeight[1],1)' : 1.119375, 'Alt$(LHEScaleWeight[3],1)' : 1.030187, 'Alt$(LHEScaleWeight[5],1)' : 0.976274, 'Alt$(LHEScaleWeight[7],1)' : 0.894255, 'Alt$(LHEScaleWeight[8],1)' : 0.869184},
+    '0j' : {'Alt$(LHEScaleWeight[0],1)' : 1.081416, 'Alt$(LHEScaleWeight[1],1)' : 1.079255, 'Alt$(LHEScaleWeight[3],1)' : 1.005033, 'Alt$(LHEScaleWeight[5],1)' : 0.998453, 'Alt$(LHEScaleWeight[7],1)' : 0.921739, 'Alt$(LHEScaleWeight[8],1)' : 0.917683},
+    '1j' : {'Alt$(LHEScaleWeight[0],1)' : 1.092018, 'Alt$(LHEScaleWeight[1],1)' : 1.084906, 'Alt$(LHEScaleWeight[3],1)' : 1.011421, 'Alt$(LHEScaleWeight[5],1)' : 0.992846, 'Alt$(LHEScaleWeight[7],1)' : 0.916698, 'Alt$(LHEScaleWeight[8],1)' : 0.906510},
+    '2j' : {'Alt$(LHEScaleWeight[0],1)' : 1.106819, 'Alt$(LHEScaleWeight[1],1)' : 1.094058, 'Alt$(LHEScaleWeight[3],1)' : 1.018609, 'Alt$(LHEScaleWeight[5],1)' : 0.986346, 'Alt$(LHEScaleWeight[7],1)' : 0.909250, 'Alt$(LHEScaleWeight[8],1)' : 0.892042},
+    '3j' : {'Alt$(LHEScaleWeight[0],1)' : 1.147841, 'Alt$(LHEScaleWeight[1],1)' : 1.119702, 'Alt$(LHEScaleWeight[3],1)' : 1.030463, 'Alt$(LHEScaleWeight[5],1)' : 0.976035, 'Alt$(LHEScaleWeight[7],1)' : 0.894050, 'Alt$(LHEScaleWeight[8],1)' : 0.868780},
 }
 
 ## QCD scale nuisances for top are decorrelated for each RECO jet bin: the QCD scale is different for different jet multiplicities so it doesn't make sense to correlate them
@@ -593,7 +554,7 @@ for ibin in cuts['ww2l2v_13TeV_top']['categories']:
         'name'  : 'QCDscale_top_'+ibin,
         'kind'  : 'weight',
         'type'  : 'shape',
-        'cutspost' : lambda self, cuts: [cut for cut in cuts if ibin in cut],
+        'cutspost' : lambda self, cuts: [cut for cut in cuts if self['name'].split('_')[-1] in cut],
         'samples'  : {
             'top' : topvars,
         }
@@ -607,96 +568,31 @@ nuisances['QCDscale_ggVV'] = {
         'ggWW': '1.15',
     },
 }
-
-##### Renormalization & factorization scales
-nuisances['WWresum0j']  = {
-  'name'  : 'CMS_hww_WWresum_0j',
-  'skipCMS' : 1,
-  'kind'  : 'weight',
-  'type'  : 'shape',
-  'samples'  : {
-     'WW'   : ['nllW_Rup/nllW', 'nllW_Rdown/nllW'],
-   },
-  'cuts'  : [cut for cut in cuts if '0j' in cut]
-}
-
-nuisances['WWqscale0j']  = {
-   'name'  : 'CMS_hww_WWqscale_0j',
-   'skipCMS' : 1,
-   'kind'  : 'weight',
-   'type'  : 'shape',
-   'samples'  : {
-      'WW'   : ['nllW_Qup/nllW', 'nllW_Qdown/nllW'],
-    },
-   'cuts'  : [cut for cut in cuts if '0j' in cut]
-}
-
-nuisances['WWresum1j']  = {
-  'name'  : 'CMS_hww_WWresum_1j',
-  'skipCMS' : 1,
-  'kind'  : 'weight',
-  'type'  : 'shape',
-  'samples'  : {
-     'WW'   : ['nllW_Rup/nllW', 'nllW_Rdown/nllW'],
-   },
-  'cuts'  : [cut for cut in cuts if '1j' in cut]
-}
-
-nuisances['WWqscale1j']  = {
-   'name'  : 'CMS_hww_WWqscale_1j',
-   'skipCMS' : 1,
-   'kind'  : 'weight',
-   'type'  : 'shape',
-   'samples'  : {
-      'WW'   : ['nllW_Qup/nllW', 'nllW_Qdown/nllW'],
-    },
-   'cuts'  : [cut for cut in cuts if '1j' in cut]
-}
-
-nuisances['WWresum2j']  = {
-  'name'  : 'CMS_hww_WWresum_2j',
-  'skipCMS' : 1,
-  'kind'  : 'weight',
-  'type'  : 'shape',
-  'samples'  : {
-     'WW'   : ['nllW_Rup/nllW', 'nllW_Rdown/nllW'],
-   },
-  'cuts'  : [cut for cut in cuts if '2j' in cut]
-}
-
-nuisances['WWqscale2j']  = {
-   'name'  : 'CMS_hww_WWqscale_2j',
-   'skipCMS' : 1,
-   'kind'  : 'weight',
-   'type'  : 'shape',
-   'samples'  : {
-      'WW'   : ['nllW_Qup/nllW', 'nllW_Qdown/nllW'],
-    },
-   'cuts'  : [cut for cut in cuts if '2j' in cut]
-}
-
-nuisances['WWresum3j']  = {
-  'name'  : 'CMS_hww_WWresum_3j',
-  'skipCMS' : 1,
-  'kind'  : 'weight',
-  'type'  : 'shape',
-  'samples'  : {
-     'WW'   : ['nllW_Rup/nllW', 'nllW_Rdown/nllW'],
-   },
-  'cuts'  : [cut for cut in cuts if '3j' in cut]
-}
-
-nuisances['WWqscale3j']  = {
-   'name'  : 'CMS_hww_WWqscale_3j',
-   'skipCMS' : 1,
-   'kind'  : 'weight',
-   'type'  : 'shape',
-   'samples'  : {
-      'WW'   : ['nllW_Qup/nllW', 'nllW_Qdown/nllW'],
-    },
-   'cuts'  : [cut for cut in cuts if '3j' in cut]
-}
 '''
+# WW resummation (to be updated, but keep for now)
+norm_WWresum = ['+'.join(['({})*1.0'.format(diffcuts[binname]) if binname == "nonfid" else '({})*({})'.format(diffcuts[binname],nfdict["CMS_hww_WWresum"]["WW_"+binname][0]) for binname in diffcuts]),
+                '+'.join(['({})*1.0'.format(diffcuts[binname]) if binname == "nonfid" else '({})*({})'.format(diffcuts[binname],nfdict["CMS_hww_WWresum"]["WW_"+binname][1]) for binname in diffcuts])]
+
+nuisances['WWresum']  = {
+    'name'  : 'CMS_hww_WWresum',
+    'kind'  : 'weight',
+    'type'  : 'shape',
+    'samples'  : {
+        'WW'   : ['nllW_Rup/nllW*('+norm_WWresum[0]+')', 'nllW_Rdown/nllW*('+norm_WWresum[1]+')'],
+    },
+}
+
+norm_WWqscale = ['+'.join(['({})*1.0'.format(diffcuts[binname]) if binname == "nonfid" else '({})*({})'.format(diffcuts[binname],nfdict["CMS_hww_WWqscale"]["WW_"+binname][0]) for binname in diffcuts]),
+                 '+'.join(['({})*1.0'.format(diffcuts[binname]) if binname == "nonfid" else '({})*({})'.format(diffcuts[binname],nfdict["CMS_hww_WWqscale"]["WW_"+binname][1]) for binname in diffcuts])]
+
+nuisances['WWqscale']  = {
+    'name'  : 'CMS_hww_WWqscale',
+    'kind'  : 'weight',
+    'type'  : 'shape',
+    'samples'  : {
+        'WW'   : ['nllW_Qup/nllW*('+norm_WWqscale[0]+')', 'nllW_Qdown/nllW*('+norm_WWqscale[1]+')'],
+    },
+}
 
 # Uncertainty on SR/CR ratio
 nuisances['CRSR_accept_top'] = {
@@ -773,50 +669,29 @@ for name, vname in thusQQH:
 '''
 #### QCD scale uncertainties for Higgs signals other than ggH
 
-values = HiggsXS.GetHiggsProdXSNP('YR4','13TeV','vbfH','125.09','scale','sm')
-
-nuisances['QCDscale_qqH'] = {
-    'name': 'QCDscale_qqH', 
-    'samples': {
-        'qqH_hww': values,
-        'qqH_htt': values
-    },
-    'type': 'lnN'
+values = {
+    'ggH_hww'  : HiggsXS.GetHiggsProdXSNP('YR4','13TeV','ggH' ,'125.09','scale','sm'),
+    'qqH_hww'  : HiggsXS.GetHiggsProdXSNP('YR4','13TeV','vbfH','125.09','scale','sm'),
+    'WH_hww'   : HiggsXS.GetHiggsProdXSNP('YR4','13TeV','WH'  ,'125.09','scale','sm'),
+    'ZH_hww'   : HiggsXS.GetHiggsProdXSNP('YR4','13TeV','ZH'  ,'125.09','scale','sm'),
+    'ggZH_hww' : HiggsXS.GetHiggsProdXSNP('YR4','13TeV','ggZH','125.09','scale','sm'),
+    'ttH_hww'  : HiggsXS.GetHiggsProdXSNP('YR4','13TeV','ttH' ,'125.09','scale','sm'),
+    'ggH_htt'  : HiggsXS.GetHiggsProdXSNP('YR4','13TeV','ggH' ,'125.09','scale','sm'),
+    'qqH_htt'  : HiggsXS.GetHiggsProdXSNP('YR4','13TeV','vbfH','125.09','scale','sm'),
+    'WH_htt'   : HiggsXS.GetHiggsProdXSNP('YR4','13TeV','WH'  ,'125.09','scale','sm'),
+    'ZH_htt'   : HiggsXS.GetHiggsProdXSNP('YR4','13TeV','ZH'  ,'125.09','scale','sm')
 }
 
-valueswh = HiggsXS.GetHiggsProdXSNP('YR4','13TeV','WH','125.09','scale','sm')
-valueszh = HiggsXS.GetHiggsProdXSNP('YR4','13TeV','ZH','125.09','scale','sm')
-
-nuisances['QCDscale_VH'] = {
-    'name': 'QCDscale_VH', 
-    'samples': {
-        'WH_hww': valueswh,
-        'WH_htt': valueswh,
-        'ZH_hww': valueszh,
-        'ZH_htt': valueszh
-    },
-    'type': 'lnN',
-}
-
-values = HiggsXS.GetHiggsProdXSNP('YR4','13TeV','ggZH','125.09','scale','sm')
-
-nuisances['QCDscale_ggZH'] = {
-    'name': 'QCDscale_ggZH', 
-    'samples': {
-        'ggZH_hww': values
-    },
-    'type': 'lnN',
-}
-
-values = HiggsXS.GetHiggsProdXSNP('YR4','13TeV','ttH','125.09','scale','sm')
-
-nuisances['QCDscale_ttH'] = {
-    'name': 'QCDscale_ttH',
-    'samples': {
-        'ttH_hww': values
-    },
-    'type': 'lnN',
-}
+for cut in allcuts:
+    nuisances['QCDscale_Higgs_'+cut] = {
+        'name': 'QCDscale_Higgs',
+        'samples': {
+            'Higgs' : '{:.3f}/{:.3f}'.format(sum([float(values[subsample].split('/')[0])*sfdict[cut]['Higgs'][subsample] for subsample in values]),
+                                             sum([float(values[subsample].split('/')[1])*sfdict[cut]['Higgs'][subsample] for subsample in values]))
+        },
+        'type': 'lnN',
+        'cuts' : [cut]
+    }
 
 nuisances['QCDscale_WWewk'] = {
     'name': 'QCDscale_WWewk',
@@ -826,30 +701,26 @@ nuisances['QCDscale_WWewk'] = {
     'type': 'lnN'
 }
 
-nuisances['QCDscale_qqbar_ACCEPT'] = {
-    'name': 'QCDscale_qqbar_ACCEPT',
-    'type': 'lnN',
-    'samples': {
-        'qqH_hww': '1.003',
-        'qqH_htt': '1.003',
-        'WH_hww': '1.010',
-        'WH_htt': '1.010',
-        'ZH_hww': '1.015',
-        'ZH_htt': '1.015',
-    }
-}
+values = {'ggH_hww' : '1.012',
+          'qqH_hww' : '1.003',
+          'WH_hww'  : '1.010',
+          'ZH_hww'  : '1.015',
+          'ggZH_hww': '1.012',
+          'ttH_hww' : '1.000', #Missing value for ttH
+          'ggH_htt' : '1.012',
+          'qqH_htt' : '1.003',
+          'WH_htt'  : '1.010',
+          'ZH_htt'  : '1.015'}
 
-#FIXME: these come from HIG-16-042, maybe should be recomputed?
-nuisances['QCDscale_gg_ACCEPT'] = {
-    'name': 'QCDscale_gg_ACCEPT',
-    'samples': {
-        'ggH_htt': '1.012',
-        'ggH_hww': '1.012',
-        'ggZH_hww': '1.012',
-        #'ggWW': '1.012',
-    },
-    'type': 'lnN',
-}
+for cut in allcuts:
+    nuisances['QCDscale_Higgs_ACCEPT_'+cut] = {
+        'name': 'QCDscale_Higgs_ACCEPT',
+        'type': 'lnN',
+        'samples': {
+            'Higgs' : '{:.3f}'.format(sum([float(values[subsample])*sfdict[cut]['Higgs'][subsample] for subsample in values]))
+        },
+        'cuts' : [cut]
+    }
 
 ## Use the following if you want to apply the automatic combine MC stat nuisances.
 nuisances['stat'] = {
@@ -862,13 +733,13 @@ nuisances['stat'] = {
 }
 
 for ibin in cuts['ww2l2v_13TeV_top']['categories']:
-    nuisances['Topnorm'+ibin]  = {
-        'name'  : 'CMS_hww_Topnorm'+ibin,
+    nuisances['Topnorm_'+ibin]  = {
+        'name'  : 'CMS_hww_Topnorm_'+ibin,
         'samples'  : {
             'top' : '1.00',
         },
         'type'  : 'rateParam',
-        'cutspost' : lambda self, cuts: [cut for cut in cuts if ibin in cut],
+        'cutspost' : lambda self, cuts: [cut for cut in cuts if self['name'].split('_')[-1] in cut],
     }
 
 for n in nuisances.values():

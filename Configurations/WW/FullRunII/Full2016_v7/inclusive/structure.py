@@ -2,22 +2,32 @@
 
 # keys here must match keys in samples.py    
 
+# structure configuration for datacard
+# keys here must match keys in samples.py    
+structure ={}
+
+# keys here must match keys in samples.py 
+for iproc in samples.keys():
+    structure[iproc] = {
+        'isSignal' : 1 if 'WW_B' in iproc else 0,
+        'isData'   : 1 if iproc == 'DATA' else 0,
+    }
+structure['WWewk']['removeFromCuts'] =  ['ww2l2v_13TeV_top_1j', 'ww2l2v_13TeV_top_0j', 'ww2l2v_13TeV_sr_2j_B0', 'ww2l2v_13TeV_sr_1j_B0', 'ww2l2v_13TeV_top_2j', 'ww2l2v_13TeV_sr_0j_B0']
+structure['Vg']['removeFromCuts']      = ['ww2l2v_13TeV_top_0j','ww2l2v_13TeV_top_1j','ww2l2v_13TeV_top_2j']
+#structure['Higgs']['removeFromCuts']      = ['ww2l2v_13TeV_top_1j']
+#structure['ZZ']['removeFromCuts']      = ['ww2l2v_13TeV_top_1j']
+for nuis in nuisances.itervalues():
+  if 'cutspost' in nuis:
+    nuis['cuts'] = nuis['cutspost'](nuis, cuts)
+
+    print nuis
+
+'''
 nbins = 1
 
 structure['DY']  = {  
                   'isSignal' : 0,
                   'isData'   : 0
-              }
-
-structure['Dyemb']  = {
-                  'isSignal' : 0,
-                  'isData'   : 0
-              }
-
-structure['Dyveto']  = {
-                  'isSignal' : 0,
-                  'isData'   : 0,
-                  'removeFromCuts' : [ k for k in cuts ],
               }
 
 structure['Wjets']  = {  
@@ -70,23 +80,25 @@ for i in xrange(nbins):
   }
 
 structure['WW_nonfid'] = {
-                  'isSignal' : 0,
+                  'isSignal' : 1,
                   'isData'   : 0
                   }
 
 structure['ggWW_nonfid'] = {
-                  'isSignal' : 0,
+                  'isSignal' : 1,
                   'isData'   : 0
                   }
 
 structure['WWewk']  = {
                   'isSignal' : 0,
-                  'isData'   : 0
+                  'isData'   : 0,
+                  'removeFromCuts' :  ['ww2l2v_13TeV_top_1j', 'ww2l2v_13TeV_top_0j', 'ww2l2v_13TeV_sr_2j_B0', 'ww2l2v_13TeV_sr_1j_B0', 'ww2l2v_13TeV_top_2j', 'ww2l2v_13TeV_sr_0j_B0']
                   }
 
 structure['Wg']  = { 
                   'isSignal' : 0,
-                  'isData'   : 0 
+                  'isData'   : 0,
+                  'removeFromCuts' : ['ww2l2v_13TeV_top_1j','ww2l2v_13TeV_top_0j']
                   }
 
 structure['Vg']  = { 
@@ -95,7 +107,8 @@ structure['Vg']  = {
                   }
 structure['ZgS'] = {
                   'isSignal' : 0,
-                  'isData'   : 0
+                  'isData'   : 0,
+                  'removeFromCuts' : ['ww2l2v_13TeV_top_2j']
                   }
 structure['WgS'] = {
                   'isSignal' : 0,
@@ -118,7 +131,8 @@ structure['VgS_H'] = {
                   }
 structure['Zg']  = { 
                   'isSignal' : 0,
-                  'isData'   : 0 
+                  'isData'   : 0,
+                  'removeFromCuts' : ['ww2l2v_13TeV_top_1j']
                   }
 structure['VZ']  = { 
                   'isSignal' : 0,
@@ -154,7 +168,8 @@ structure['ggH_hww'] = {
 
 structure['qqH_hww'] = {
                   'isSignal' : 0,
-                  'isData'   : 0    
+                  'isData'   : 0,
+                  'removeFromCuts' : ['ww2l2v_13TeV_top_0j']
                   }
 
 structure['qqH_hww'] = {
@@ -169,7 +184,8 @@ structure['WH_hww'] = {
 
 structure['ZH_hww'] = {
                   'isSignal' : 0,
-                  'isData'   : 0    
+                  'isData'   : 0,
+                  'removeFromCuts' : ['ww2l2v_13TeV_top_0j']
                   }
 
 structure['ggZH_hww'] = {
@@ -200,6 +216,7 @@ structure['ggH_htt'] = {
 structure['qqH_htt'] = {
                   'isSignal' : 0,
                   'isData'   : 0,
+                  'removeFromCuts' : ['ww2l2v_13TeV_top_0j']
                   }
 
 structure['WH_htt'] = {
@@ -231,3 +248,4 @@ for nuis in nuisances.itervalues():
     nuis['cuts'] = nuis['cutspost'](nuis, cuts)
 
     print nuis
+'''

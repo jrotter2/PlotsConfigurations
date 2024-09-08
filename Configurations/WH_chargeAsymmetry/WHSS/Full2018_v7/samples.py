@@ -3,11 +3,11 @@ import inspect
 import subprocess
 import string
 
-# /afs/cern.ch/user/n/ntrevisa/work/latinos/unblinding/CMSSW_10_6_4/src/PlotsConfigurations/Configurations/WH_chargeAsymmetry/WH_SS/Full2018nanov7
+# /afs/cern.ch/user/n/ntrevisa/work/latinos/unblinding/CMSSW_10_6_4/src/PlotsConfigurations/Configurations/WH_chargeAsymmetry/WHSS/Full2018_v7
 
 configurations = os.path.realpath(inspect.getfile(inspect.currentframe())) # this file
-configurations = os.path.dirname(configurations) # Full2018nanov7
-configurations = os.path.dirname(configurations) # WH_SS
+configurations = os.path.dirname(configurations) # Full2018_v7
+configurations = os.path.dirname(configurations) # WHSS
 configurations = os.path.dirname(configurations) # WH_chargeAsymmetry
 configurations = os.path.dirname(configurations) # Configurations
 
@@ -74,20 +74,20 @@ dataDirectory = os.path.join(treeBaseDir, dataReco, dataSteps)
 ################################################
 
 DataRun = [
-            ['A','Run2018A-02Apr2020-v1'] ,
-            ['B','Run2018B-02Apr2020-v1'] ,
-            ['C','Run2018C-02Apr2020-v1'] ,
-            ['D','Run2018D-02Apr2020-v1'] ,
-          ]
+    ['A','Run2018A-02Apr2020-v1'] ,
+    ['B','Run2018B-02Apr2020-v1'] ,
+    ['C','Run2018C-02Apr2020-v1'] ,
+    ['D','Run2018D-02Apr2020-v1'] ,
+]
 
 DataSets = ['MuonEG','DoubleMuon','SingleMuon','EGamma']
 
 DataTrig = {
-            'MuonEG'         : 'Trigger_ElMu' ,
-            'DoubleMuon'     : '!Trigger_ElMu && Trigger_dblMu' ,
-            'SingleMuon'     : '!Trigger_ElMu && !Trigger_dblMu && Trigger_sngMu' ,
-            'EGamma'         : '!Trigger_ElMu && !Trigger_dblMu && !Trigger_sngMu && (Trigger_sngEl || Trigger_dblEl)' ,
-           }
+    'MuonEG'         : 'Trigger_ElMu' ,
+    'DoubleMuon'     : '!Trigger_ElMu && Trigger_dblMu' ,
+    'SingleMuon'     : '!Trigger_ElMu && !Trigger_dblMu && Trigger_sngMu' ,
+    'EGamma'         : '!Trigger_ElMu && !Trigger_dblMu && !Trigger_sngMu && (Trigger_sngEl || Trigger_dblEl)' ,
+}
 
 #########################################
 ############ MC COMMON ##################

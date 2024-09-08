@@ -1,11 +1,13 @@
 from ROOT import TFile, TH1
 import collections
+import json
 
 TH1.AddDirectory(0)
 
 doTable = False
+append = ''
 
-for year in ['2016','2017','2018']:
+for year in ['2016_HIPM','2016_noHIPM','2017','2018']:
 
     print year
 
@@ -14,11 +16,11 @@ for year in ['2016','2017','2018']:
     ########################
 
     samples = collections.OrderedDict()
-    handle = open('../Full%s_v7/inclusive/ExpUnc/samples.py'%(year),'r')
+    handle = open('../Full%s_v9/inclusive/ExpUnc/samples.py'%(year),'r')
     exec(handle)
     handle.close()
 
-    f0 = TFile("../Full{year}_v7/inclusive/ExpUnc/rootFile/plots_WW{year}_v7_ExpNorm.root".format(year=year))
+    f0 = TFile("../Full{year}_v9/inclusive/ExpUnc/rootFile{append}/plots_WW{year}_v9_ExpNorm{append}.root".format(year=year,append=append))
     pu_weight = {}
     for sample in samples.keys():
 
@@ -33,7 +35,7 @@ for year in ['2016','2017','2018']:
         pu_weight[sample] = [h_nom.Integral()/h_pu_up.Integral(), h_nom.Integral()/h_pu_down.Integral()]
 
     print "PU"
-    ordering = ['DY','WW','ggWW','WWewk','Wg','WgS','Zg','ZgS','WZ','ZZ','VVV','top','ggH_htt','qqH_htt','WH_htt','ZH_htt','ggH_hww','qqH_hww','WH_hww','ZH_hww','ggZH_hww','ttH_hww']
+    ordering = ['DY','WW','ggWW','WWewk','Vg','WZ','ZZ','VVV','top','Higgs']
     ordered_keys = sorted(pu_weight.keys(), key=lambda x : ordering.index(x) if x in ordering else -1)
     for sample in ordered_keys:
         if doTable :
@@ -86,3 +88,4 @@ for year in ['2016','2017','2018']:
     print "topScaleNormFactors = {"
     print "    '2j' : {"+", ".join(["'%s' : %f"%(var,(hvar_tot[ivar].GetBinContent(3)+hvar_tot[ivar].GetBinContent(4))/(hnom_tot.GetBinContent(3)+hnom_tot.GetBinContent(4))) for ivar,var in enumerate(variations)])+"},"
     print "}"
+
